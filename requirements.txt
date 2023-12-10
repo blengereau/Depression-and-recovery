@@ -1,0 +1,7 @@
+matplotlib
+seaborn
+ipykernel
+numpy==1.23.5
+pandas==1.5.3
+tensorflow
+scipy==1.10.0
