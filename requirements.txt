@@ -6,3 +6,6 @@ pandas==1.5.3
 tensorflow
 scipy
 statsmodels
+statistics
+os
+sqlite3
