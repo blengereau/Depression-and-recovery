@@ -7,5 +7,3 @@ tensorflow
 scipy
 statsmodels
 statistics
-os
-sqlite3
