@@ -4,6 +4,8 @@ import numpy as np
 
 
 def create_output_df(data, code):
+    ''''From the dataset GDP_per_capita, this function create a dataframe the Hodrixk-Prescott detrended output gap for a specific country code.
+    '''
     df = data.loc[data['Code'] == code]
     cycle, trend = sm.tsa.filters.hpfilter(df.GDP_per_capita, lamb=1600)
     dataframe = pd.DataFrame({
@@ -16,14 +18,18 @@ def merge_datasets(dataset1, dataset2, on=['Year', 'CC3'], how='left'):
     merged_df = pd.merge(dataset1, dataset2, on=on, how=how)
     return merged_df
 
-def concat_dataset(dataset1, dataset2, list):
+def concat_dataset(dataset1, dataset2, list, how):
     all_datasets = []
     for code in list:
-        df = merge_datasets(create_output_df(dataset2[dataset2["CC3"]==code], dataset1, code))
+        df = merge_datasets(dataset2[dataset2["CC3"]==code], create_output_df(dataset1, code), how = how)
         all_datasets.append(df)
 
     concat_dataset = pd.concat(all_datasets,ignore_index=True)
     return concat_dataset
+
+
+
+
 
 def extract_inflation_series(data, target_year):
     target_index = data[data['Year'] == target_year].index[0]
