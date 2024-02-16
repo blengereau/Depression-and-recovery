@@ -7,4 +7,4 @@ __pycache__/
 *$py.class
 
 # Jupyter Notebook
-.ipynb_checkpoints
+./code/ipynb_checkpoints
