@@ -58,15 +58,57 @@ def plot_by_crisis_length(series, crisis_duration, len_freq, string):
                     else f"te+{k}"
                     for k in range(-1, len(average_pattern) - 1)]
 
-        sns.lineplot(x = years, y = average_pattern, marker = 's', label = 'Crisis period', alpha = 0.9)
+        sns.lineplot(x = years, y = average_pattern, marker = 's', alpha = 0.9)
         plt.axhline(y=0, color='black', label='y=0', linestyle = 'dashed', alpha = 0.7)
 
-        plt.plot(years[1:1+i], average_pattern[1:1+i], marker='s', color='red')  # Change marker color to red for example
+        plt.plot(years[1:1+i], average_pattern[1:1+i], marker='s', color='red', label = 'Crisis period')  # Change marker color to red for example
 
         plt.title(f'{string} in reaction to a {i}-year crisis')
+        plt.legend()
+
+        if string == 'Inflation rate':
+            plt.ylabel('Annual inflation rate')
+        elif string == 'Output gap':
+            plt.ylabel('Output gap')
 
         plt.xlabel('Time in years')
-        plt.ylabel('Annual inflation rate')
-        plt.ylim(-10, 10)
+        plt.ylim(-10, 15)
 
         plt.show()
+
+def plot_dynamics(crisis_series, recovery_series, string):
+    #Compute the average response pattern by time elapsed with normalizing the inflation series
+    pattern_during_crisis = compute_pattern(crisis_series)
+    pattern_during_recovery = compute_pattern(recovery_series)
+
+    #Compute the average response pattern by time elapsed without normalizing the inflation series
+    # pattern_during_crisis = compute_pattern(crisis_data(global_data, during_crisis = True))
+    # pattern_during_recovery = compute_pattern(crisis_data(global_data, during_crisis = False))
+
+    #Plot the inflation rate during banking crsis period
+    years = [f"ts{i}" if i < 0 else f"ts+{i}" if i > 0 else "ts" for i in range(-1, len(pattern_during_crisis) - 1)]
+    sns.lineplot(x = years, y = pattern_during_crisis, marker = 's', label = 'During crisis')
+
+    plt.axhline(y=0, color='orange', label='y=0', linestyle = 'dashed', alpha = 0.8)
+
+    plt.title(f'{string} during crisis period')
+
+    plt.xlabel('Time in years')
+    plt.ylabel(string)
+
+    plt.show()
+
+    #Plot the inflation rate during recovery period
+    years = [f"te+{i}" if i > 0 else "te" for i in range(0, len(pattern_during_recovery))]
+    sns.lineplot(x = years, y = pattern_during_recovery, marker = 's', color = 'Purple', alpha = 0.9, label = 'During recovery')
+    plt.axhline(y=0, color='orange', label='y=0', linestyle = 'dashed', alpha = 0.8)
+
+    plt.title(f'{string} during recovery period')
+
+    plt.xlabel('Time in years')
+    plt.ylabel(string)
+    plt.ylim(-10, 10)
+    plt.xlim('te', 'te+13')
+    plt.legend()
+
+    plt.show()

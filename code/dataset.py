@@ -51,16 +51,18 @@ def dummy_variable(dataset):
     dataset['banking_crisis_only_first_year'] = 0
     last_crisis_year = None
     previous_year_exlcuded = None
+    previous_year_inflation_is_nan = None
 
     for index, row in dataset.iterrows():
         if row['banking_crisis'] == 1:
-            if row['banking_crisis_only'] == 1 and previous_year_exlcuded != 1:
+            if row['banking_crisis_only'] == 1 and previous_year_exlcuded != 1 and not previous_year_inflation_is_nan :
                 if last_crisis_year is None:
                     dataset.at[index, 'banking_crisis_only_first_year'] = 1
                 if ((last_crisis_year is not None and row['Year'] - last_crisis_year >= 2) or (last_crisis_year is not None and row['Year'] - last_crisis_year <0)):
                     dataset.at[index, 'banking_crisis_only_first_year'] = 1
             last_crisis_year = row['Year']
         previous_year_exlcuded = row['excluded_years']
+        previous_year_inflation_is_nan = np.isnan(row['annual_inflation'])
 
     #Create a dummy for recovery period
     dataset['recovery_only'] = ((dataset['banking_crisis'] != 1) &
