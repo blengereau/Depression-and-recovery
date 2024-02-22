@@ -9,7 +9,7 @@ def create_output_df(data, code):
     ''''From the dataset GDP_per_capita, this function create a dataframe the Hodrixk-Prescott detrended output gap for a specific country code.
     '''
     df = data.loc[data['Code'] == code]
-    cycle, trend = sm.tsa.filters.hpfilter(df.GDP_per_capita, lamb=1600)
+    cycle, trend = sm.tsa.filters.hpfilter(df.GDP_per_capita, lamb=400)
     dataframe = pd.DataFrame({
     'CC3': df.Code,
     'Year' : df.Year,

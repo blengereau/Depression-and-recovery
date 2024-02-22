@@ -118,7 +118,10 @@ def inflation_dynamics(data, during_crisis=True):
     recovery_started = False
     first_year_appended = False
     excluded_year_during_crisis = False
+    excluded_year_during_recovery = False
+    crisis_occured = False
     current_serie = []
+    previous_year = 0
 
     for index, row in data.iterrows():
         # Extract the serie only if the value of the value of the inflation rate is not a NaN value
@@ -150,27 +153,40 @@ def inflation_dynamics(data, during_crisis=True):
                     first_year_appended = False
                     excluded_year_during_crisis = False
             else:
-                # Extract data during a non-crisis period
+                # Extract during a non-crisis period
+                if row['banking_crisis_only_first_year'] == 1:
+                    crisis_occured = True
+                elif (row['Year'] - previous_year) < 0:
+                    crisis_occured = False
+
                 if row['recovery_only'] == 1:
-                    recovery_started = True
-                    current_serie.append(row['annual_inflation'])
+                    if crisis_occured and not excluded_year_during_recovery:
+                        recovery_started = True
+                        current_serie.append(row['annual_inflation'])
+                elif row['excluded_years'] == 1:
+                    excluded_year_during_recovery = True
                 elif recovery_started:
                     # End the series when a 0 is recorded in the banking_crisis column
                     recovery_started = False
-                    # current_serie = np.array(current_serie)
                     series.append(current_serie)
-                    # current_serie = current_serie.tolist()
                     current_serie = []
+                    excluded_year_during_recovery = False
+                else:
+                    excluded_year_during_recovery = False
+            previous_year = row['Year']
     return series
 
 def output_gap_dynamics(data, during_crisis=True):
 
     series = []
     crisis_started = False
-    no_crisis_period = False
+    recovery_started = False
     first_year_appended = False
     excluded_year_during_crisis = False
+    excluded_year_during_recovery = False
+    crisis_occured = False
     current_serie = []
+    previous_year = 0
 
     for index, row in data.iterrows():
         # Extract the serie only if the value of the value of the inflation rate is not a NaN value
@@ -199,23 +215,27 @@ def output_gap_dynamics(data, during_crisis=True):
                 current_serie = []
                 first_year_appended = False
                 excluded_year_during_crisis = False
+
         else:
-            # Extract data during a non-crisis period
+            # Extract during a non-crisis period
+            if row['banking_crisis_only_first_year'] == 1:
+                crisis_occured = True
+            elif (row['Year'] - previous_year) < 0:
+                crisis_occured = False
+
             if row['recovery_only'] == 1:
-                if not no_crisis_period:
-                    no_crisis_period = True
-                    # Append the inflation rate for the current year
+                if crisis_occured and not excluded_year_during_recovery:
+                    recovery_started = True
                     current_serie.append(row['output_gap'])
-                else:
-                    # Continue the existing series
-                    current_serie.append(row['output_gap'])
-            elif no_crisis_period:
+            elif row['excluded_years'] == 1:
+                excluded_year_during_recovery = True
+            elif recovery_started:
                 # End the series when a 0 is recorded in the banking_crisis column
-                no_crisis_period = False
-                # current_serie = np.array(current_serie)
+                recovery_started = False
                 series.append(current_serie)
-                # current_serie = current_serie.tolist()
                 current_serie = []
-    # if not during_crisis:
-    #     series = series[1:]
+                excluded_year_during_recovery = False
+            else:
+                excluded_year_during_recovery = False
+        previous_year = row['Year']
     return series
