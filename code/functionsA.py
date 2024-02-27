@@ -87,7 +87,7 @@ def extract_output_gap_series(data):
             if index - 1 >= 0:
                 current_serie.append(data.at[index - 1, 'output_gap'])
             current_serie.append(row['output_gap'])
-            for i in range(1,10):
+            for i in range(1,9):
                 if data.at[index + i, 'inflation_crisis'] == 1  or pd.isna(data.at[index + i,'output_gap']) or data.at[index + i, 'currency_crisis'] == 1 or (data.at[index + i, 'banking_crisis_only_first_year'] == 1):
                     break
                 current_serie.append(data.at[index + i,'output_gap'])
@@ -163,7 +163,7 @@ def inflation_dynamics(data, during_crisis=True):
                     if crisis_occured and not excluded_year_during_recovery:
                         recovery_started = True
                         current_serie.append(row['annual_inflation'])
-                elif row['excluded_years'] == 1:
+                elif row['excluded_years'] == 1 and row['banking_crisis'] != 1:
                     excluded_year_during_recovery = True
                 elif recovery_started:
                     # End the series when a 0 is recorded in the banking_crisis column
@@ -174,6 +174,8 @@ def inflation_dynamics(data, during_crisis=True):
                 else:
                     excluded_year_during_recovery = False
             previous_year = row['Year']
+    if len(current_serie)>0:
+        series.append(current_serie)
     return series
 
 def output_gap_dynamics(data, during_crisis=True):
@@ -227,7 +229,7 @@ def output_gap_dynamics(data, during_crisis=True):
                 if crisis_occured and not excluded_year_during_recovery:
                     recovery_started = True
                     current_serie.append(row['output_gap'])
-            elif row['excluded_years'] == 1:
+            elif row['excluded_years'] == 1  and row['banking_crisis'] != 1:
                 excluded_year_during_recovery = True
             elif recovery_started:
                 # End the series when a 0 is recorded in the banking_crisis column
@@ -238,4 +240,6 @@ def output_gap_dynamics(data, during_crisis=True):
             else:
                 excluded_year_during_recovery = False
         previous_year = row['Year']
+    if len(current_serie)>0:
+        series.append(current_serie)
     return series

@@ -4,19 +4,26 @@ import pandas as pd
 def compute_crisis_duration(dataset):
     crisis_duration = []
     current_length = 0
+    last_index = 0
 
     for index, row in dataset.iterrows():
         if current_length > 0:
-            if row['banking_crisis'] == 1:
+            if row['banking_crisis'] == 1 and row['banking_crisis_only_first_year'] != 1 and row['excluded_years'] != 1:
                 current_length += 1
-            else:
-                crisis_duration.append(current_length)
-                current_length = 0
-        else:
-            if row['banking_crisis_only_first_year'] == 1:
-                current_length = +1
 
-    #Check if the last sequence extends to the end of the dataset
+            elif row['excluded_years']==1:
+                if index < (last_index + 9):
+                    current_length = 0
+            elif row['banking_crisis_only_first_year'] == 1:
+                    crisis_duration.append(current_length)
+                    current_length = 1
+                    last_index = index
+
+        elif row['banking_crisis_only_first_year'] == 1:
+                current_length += 1
+                last_index = index
+
+    # Check if the last sequence extends to the end of the dataset
     if current_length > 0:
         crisis_duration.append(current_length)
 
