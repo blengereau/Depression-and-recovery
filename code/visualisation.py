@@ -47,18 +47,22 @@ def plot_by_crisis_length(series, crisis_duration, frequency_table, string):
         average_pattern, number_of_data_points = compute_pattern(series_by_crisis_length)
         # confidence_interval = 1.96 * np.std(normalize_crisis_data(series_by_crisis_length, axis=0) / np.sqrt(series_by_crisis_length.shape[0])
 
-        if i == 1:
-            years = [f"ts{k}" if k < 0
-                    else f"te+{k}" if k > 0
-                    else "ts = te"
-                    for k in range(-1, len(average_pattern) - 1)]
-        else:
-            years = [f"ts{k}" if k < 0
-                    else f"ts" if k == 0
-                    else f"ts+{k}" if 0 < k < i
-                    else "te" if k == i
-                    else f"te+{k}"
-                    for k in range(-1, len(average_pattern) - 1)]
+        # Define years for x-axis labels based on the crisis length i
+        # if i == 1:
+        #     years = [f"ts{k}" if k < 0
+        #             else f"ts" if k == 0
+        #             else "te" if k == i
+        #             else f"te+{k}" if k > 0
+        #             else "ts = te"
+        #             for k in range(-1, len(average_pattern) - 1)]
+        # else:
+        years = [f"ts{k}" if k < 0
+                else f"ts" if k == 0
+                else f"ts+{k}" if 0 < k < i
+                else "te" if k == i
+                else f"te+{k - i}"
+                for k in range(-1, len(average_pattern) - 1)]
+
         sns.set_style("whitegrid")
         sns.lineplot(x = years, y = average_pattern, marker='o', alpha=0.9, label='Average Pattern')
         sns.lineplot(x = years[1:1+i], y = average_pattern[1:1+i], marker='s', color='red', label = 'Crisis period')  # Change marker color to red for example

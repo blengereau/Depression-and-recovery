@@ -2,22 +2,29 @@ import pandas as pd
 import statsmodels.api as sm
 import numpy as np
 
-def create_output_df(data, code):
+def create_output_df(data, code, smoothing_param=1600):
     '''Create a dataframe with the Hodrick-Prescott detrended output gap for a specific country code.
 
     Args:
     data (DataFrame): The dataset containing GDP per capita information.
     code (str): The country code for which the output gap is calculated.
+    smoothing_param (int, optional): The smoothing parameter for the Hodrick-Prescott filter. Default is 1600.
 
     Returns:
     DataFrame: DataFrame containing the output gap for the specified country code.
+
+    This function filters the dataset to extract GDP per capita information for the specified country code.
+    It then applies the Hodrick-Prescott filter to detrend the GDP per capita data, using the provided smoothing parameter.
+    The output gap is calculated as the percentage deviation of GDP per capita from its trend.
+    The function returns a DataFrame containing the output gap values.
+
     '''
 
     # Filter data for the specified country code
     df = data.loc[data['Code'] == code]
 
     # Apply Hodrick-Prescott filter to detrend GDP per capita
-    cycle, trend = sm.tsa.filters.hpfilter(df.GDP_per_capita, lamb=400 )
+    cycle, trend = sm.tsa.filters.hpfilter(df.GDP_per_capita, lamb=smoothing_param)
 
     # Calculate output gap
     output_gap = round(((df.GDP_per_capita - trend) / trend) * 100, 2)
@@ -46,7 +53,7 @@ def merge_datasets(dataset1, dataset2, on=['Year', 'CC3'], how='left'):
     merged_df = pd.merge(dataset1, dataset2, on=on, how=how)
     return merged_df
 
-def concat_dataset(dataset1, dataset2, list, how):
+def concat_dataset(dataset1, dataset2, list, how, smoothing_param=1600):
     '''Concatenate datasets for multiple countries.
 
     Args:
@@ -54,6 +61,7 @@ def concat_dataset(dataset1, dataset2, list, how):
     dataset2 (DataFrame): The second dataset to concatenate.
     country_list (list): List of country codes to include in the concatenated dataset.
     how (str, optional): Type of concatenation to be performed. Defaults to 'left'.
+    smoothing_param (int, optional): The smoothing parameter for the Hodrick-Prescott filter. Default is 1600.
 
     Returns:
     DataFrame: Concatenated DataFrame.
@@ -61,7 +69,7 @@ def concat_dataset(dataset1, dataset2, list, how):
     all_datasets = []
     for code in list:
         # Merge datasets for each country code
-        df = merge_datasets(dataset1[dataset1["CC3"]==code], create_output_df(dataset2, code), how = how)
+        df = merge_datasets(dataset1[dataset1["CC3"]==code], create_output_df(dataset2, code, smoothing_param), how = how)
         all_datasets.append(df)
 
     # Concatenate all datasets
