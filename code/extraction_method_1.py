@@ -54,11 +54,11 @@ def length_frequency(crisis_duration):
         length_counts[length] = length_counts.get(length, 0) + 1
 
     # Convert dictionary to pandas DataFrame
-    frequency_table = pd.DataFrame(list(length_counts.items()), columns=['Length','Count'])
-    frequency_table = frequency_table.sort_values(by='Length').reset_index(drop=True)
+    frequency_table = pd.DataFrame(list(length_counts.items()), columns=['Length_of_crisis','Number_of_crisis_event'])
+    frequency_table = frequency_table.sort_values(by='Length_of_crisis').reset_index(drop=True)
 
-    # Add a number of data points column
-    frequency_table['Number of points'] = frequency_table['Count'].sum() - frequency_table['Count'].cumsum() + frequency_table['Count']
+    ## Add a number of data points column
+    # frequency_table['Number of points'] = frequency_table['Number_of_crisis_event'].sum() - frequency_table['Number_of_crisis_event'].cumsum() + frequency_table['Number_of_crisis_event']
 
     return frequency_table
 

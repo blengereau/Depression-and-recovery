@@ -53,7 +53,7 @@ def merge_datasets(dataset1, dataset2, on=['Year', 'CC3'], how='left'):
     merged_df = pd.merge(dataset1, dataset2, on=on, how=how)
     return merged_df
 
-def concat_dataset(dataset1, dataset2, list, how, smoothing_param=1600):
+def concat_dataset(dataset1, dataset2, list, how, smoothing_param=6.25):
     '''Concatenate datasets for multiple countries.
 
     Args:
@@ -61,7 +61,7 @@ def concat_dataset(dataset1, dataset2, list, how, smoothing_param=1600):
     dataset2 (DataFrame): The second dataset to concatenate.
     country_list (list): List of country codes to include in the concatenated dataset.
     how (str, optional): Type of concatenation to be performed. Defaults to 'left'.
-    smoothing_param (int, optional): The smoothing parameter for the Hodrick-Prescott filter. Default is 1600.
+    smoothing_param (int, optional): The smoothing parameter for the Hodrick-Prescott filter. Default is 6.25.
 
     Returns:
     DataFrame: Concatenated DataFrame.

@@ -34,8 +34,8 @@ def compute_pattern(list):
 
 #Plot the response pattern for each length of crisis
 
-def plot_by_crisis_length(series, crisis_duration, frequency_table, string):
-    for i in frequency_table.Length:
+def plot_all_crisis_length(series, crisis_duration, frequency_table, string):
+    for i in frequency_table.Length_of_crisis:
         series_by_crisis_length = []
         #Appending the series for single year crisis
         for j in range (0,len(series)):
@@ -73,8 +73,9 @@ def plot_by_crisis_length(series, crisis_duration, frequency_table, string):
                 plt.text(m, average_pattern[m] + 0.5 , str(number_of_data_points[m]), ha='center', va='bottom')
 
         plt.text(0,9,f'Number of observations : {number_of_observations}',ha='left', va='top',  style = 'italic', fontsize=10, bbox={'facecolor': 'grey', 'alpha': 0.5, 'pad': 10})
+        plt.text(0.5, 1.05, 'Subtitle', horizontalalignment='center', fontsize=12, transform=plt.gca().transAxes)
 
-        plt.title(f'{string} in reaction to a {i}-year crisis')
+        plt.title(f'{string} in reaction to a {i}-year banking crisis')
         plt.legend()
 
         if string == 'Inflation rate':
@@ -86,6 +87,55 @@ def plot_by_crisis_length(series, crisis_duration, frequency_table, string):
         plt.ylim(-10, 10)
 
         plt.show()
+
+def plot_by_crisis_length(series, crisis_duration, frequency_table, string, desired_length):
+    i = desired_length
+    if i in frequency_table.Length_of_crisis.tolist():
+        series_by_crisis_length = []
+        #Appending the series for single year crisis
+        for j in range (0,len(series)):
+            if crisis_duration[j] == i:
+                series_by_crisis_length.append(series[j])
+
+        number_of_observations = len(series_by_crisis_length)
+
+        average_pattern, number_of_data_points = compute_pattern(series_by_crisis_length)
+        # confidence_interval = 1.96 * np.std(normalize_crisis_data(series_by_crisis_length, axis=0) / np.sqrt(series_by_crisis_length.shape[0])
+
+        years = [f"ts{k}" if k < 0
+                else f"ts" if k == 0
+                else f"ts+{k}" if 0 < k < i
+                else "te" if k == i
+                else f"te+{k - i}"
+                for k in range(-1, len(average_pattern) - 1)]
+
+        sns.set_style("whitegrid")
+        sns.lineplot(x = years, y = average_pattern, marker='o', alpha=0.9, label='Average Pattern')
+        sns.lineplot(x = years[1:1+i], y = average_pattern[1:1+i], marker='s', color='red', label = 'Crisis period')  # Change marker color to red for example
+
+        plt.axhline(y=0, color='black', label='y=0', linestyle = 'dashed', alpha = 0.6)
+        for m in range(len(average_pattern)):
+            if -10< average_pattern[m] <10:
+                plt.text(m, average_pattern[m] + 0.5 , str(number_of_data_points[m]), ha='center', va='bottom')
+
+        plt.text(0,9,f'Number of observations : {number_of_observations}',ha='left', va='top',  style = 'italic', fontsize=10, bbox={'facecolor': 'grey', 'alpha': 0.5, 'pad': 10})
+        plt.text(0.5, 1.05, 'Subtitle', horizontalalignment='center', fontsize=12, transform=plt.gca().transAxes)
+
+
+        plt.title(f'{string} in reaction to a {i}-year banking crisis')
+        plt.legend()
+
+        if string == 'Inflation rate':
+            plt.ylabel('Annual inflation rate')
+        elif string == 'Output gap':
+            plt.ylabel('Output gap')
+
+        plt.xlabel('Time in years')
+        plt.ylim(-10, 10)
+
+        plt.show()
+    else:
+        print("Error: The database does not contain any examples of banking crises of the specified duration.")
 
 def plot_dynamics(crisis_series, recovery_series, string):
     #Compute the average response pattern by time elapsed with normalizing the inflation series
