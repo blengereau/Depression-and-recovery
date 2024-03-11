@@ -73,7 +73,7 @@ def plot_all_crisis_length(series, crisis_duration, frequency_table, string):
                 plt.text(m, average_pattern[m] + 0.5 , str(number_of_data_points[m]), ha='center', va='bottom')
 
         plt.text(0,9,f'Number of observations : {number_of_observations}',ha='left', va='top',  style = 'italic', fontsize=10, bbox={'facecolor': 'grey', 'alpha': 0.5, 'pad': 10})
-        plt.text(0.5, 1.05, 'Subtitle', horizontalalignment='center', fontsize=12, transform=plt.gca().transAxes)
+        plt.text(-0.5, -13, 'The number of points from which the average is calculated \nis indicated above each trend point.', ha='left', va='top',style = 'italic', fontsize=10, color = 'gray')
 
         plt.title(f'{string} in reaction to a {i}-year banking crisis')
         plt.legend()
@@ -112,14 +112,14 @@ def plot_by_crisis_length(series, crisis_duration, frequency_table, string, desi
         sns.set_style("whitegrid")
         sns.lineplot(x = years, y = average_pattern, marker='o', alpha=0.9, label='Average Pattern')
         sns.lineplot(x = years[1:1+i], y = average_pattern[1:1+i], marker='s', color='red', label = 'Crisis period')  # Change marker color to red for example
+        plt.axhline(y=0, color='black', linestyle = 'dashed', alpha = 0.6)
 
-        plt.axhline(y=0, color='black', label='y=0', linestyle = 'dashed', alpha = 0.6)
         for m in range(len(average_pattern)):
             if -10< average_pattern[m] <10:
                 plt.text(m, average_pattern[m] + 0.5 , str(number_of_data_points[m]), ha='center', va='bottom')
 
-        plt.text(0,9,f'Number of observations : {number_of_observations}',ha='left', va='top',  style = 'italic', fontsize=10, bbox={'facecolor': 'grey', 'alpha': 0.5, 'pad': 10})
-        plt.text(0.5, 1.05, 'Subtitle', horizontalalignment='center', fontsize=12, transform=plt.gca().transAxes)
+        plt.text(0, 9,f'Number of observations : {number_of_observations }',ha='left', va='top',  style = 'italic', fontsize=10, bbox={'facecolor': 'grey', 'alpha': 0.5, 'pad': 10})
+        plt.text(-0.5, -13, 'The number of points from which the average is calculated \nis indicated above each trend point.', ha='left', va='top',style = 'italic', fontsize=10, color = 'gray')
 
 
         plt.title(f'{string} in reaction to a {i}-year banking crisis')
@@ -163,7 +163,7 @@ def plot_dynamics(crisis_series, recovery_series, string):
 
     #Plot the inflation rate during recovery period
     years = [f"te+{i}" if i > 0 else "te" for i in range(0, len(average_pattern_during_recovery))]
-    sns.lineplot(x = years, y = average_pattern_during_recovery, marker = 's', color = 'Purple', alpha = 0.9, label = 'During recovery')
+    sns.lineplot(x = years, y = average_pattern_during_recovery, marker = 's', color = 'Purple', alpha = 0.9, label = 'Pattern during recovery')
     offset = 0.3
     for m in range(0,14):
         if -10< (average_pattern_during_recovery[m] + offset) <10:
