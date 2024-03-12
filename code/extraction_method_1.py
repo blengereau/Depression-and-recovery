@@ -191,6 +191,7 @@ def inflation_dynamics(data, during_crisis=True):
     crisis_occured = False  # Flag indicating if a crisis has occurred
     previous_year = 0  # Variable to track the previous year
 
+    # Iterating through the dataset
     for index, row in data.iterrows():
         # Extract the serie only if the value of the value of the inflation rate is not a NaN value
         if not pd.isna(row['annual_inflation']):
