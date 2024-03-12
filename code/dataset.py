@@ -77,10 +77,19 @@ def concat_dataset(dataset1, dataset2, list, how, smoothing_param=6.25):
 
     return concat_dataset
 
-
-# Create dummy variable
-
 def dummy_variable(dataset):
+    '''
+    Creates dummy variables based on specific conditions in the dataset.
+
+    Args:
+    - dataset (DataFrame): The dataset containing various the informations for a list of countries.
+
+    The function generates dummy variables for different conditions:
+    1. 'banking_crisis_only': 1 if it's a year with a banking crisis but no inflation or currency crisis and has non-NaN inflation values, otherwise 0.
+    2. 'excluded_years': 1 if it's a year with either an inflation crisis or a currency crisis, otherwise 0.
+    3. 'banking_crisis_only_first_year': 1 if it's the first year of a banking crisis without an inflation or currency crisis in the previous year and has non-NaN inflation values, otherwise 0.
+    4. 'recovery_only': 1 if it's a year without a banking, inflation, or currency crisis and has non-NaN inflation values, otherwise 0.
+    '''
 
     # Generate a boolean mask where True indicates non-NaN values
     not_nan_mask = ~np.isnan(dataset['annual_inflation'])
