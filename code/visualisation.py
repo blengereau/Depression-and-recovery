@@ -55,7 +55,7 @@ def plot_all_crisis_length(series, crisis_duration, frequency_table, string):
     '''
 
     # Loop through each crisis duration in the frequency table
-    for i in frequency_table.Length_of_crisis:
+    for i in frequency_table['Length in years']:
         series_by_crisis_length = []
 
         #Appending the series for single year crisis
@@ -78,7 +78,7 @@ def plot_all_crisis_length(series, crisis_duration, frequency_table, string):
 
         # Plotting
         sns.set_style("whitegrid")
-        sns.lineplot(x = years, y = average_pattern, marker='o', alpha=0.9, label='Average Pattern')
+        sns.lineplot(x = years, y = average_pattern, marker='o', alpha=0.9, label='Average Trend')
         sns.lineplot(x = years[1:1+i], y = average_pattern[1:1+i], marker='s', color='red', label = 'Crisis period')  # Change marker color to red for example
 
         # Add horizontal line at y=0 and annotations for number of data points
@@ -89,11 +89,11 @@ def plot_all_crisis_length(series, crisis_duration, frequency_table, string):
 
         # Add annotations for number of observations and explanation
         plt.text(0,9,f'Number of observations : {number_of_observations}',ha='left', va='top',  style = 'italic', fontsize=10, bbox={'facecolor': 'grey', 'alpha': 0.5, 'pad': 10})
-        plt.text(-0.5, -13, 'The number of points from which the average is calculated \nis indicated above each trend point.', ha='left', va='top',style = 'italic', fontsize=10, color = 'gray')
+        # plt.text(-0.5, -13, 'The number of points from which the average is calculated\nis indicated above each trend point.', ha='left', va='top',style = 'italic', fontsize=10, color = 'gray')
 
         # Set title, labels, and limits
         plt.title(f'{string} in reaction to a {i}-year banking crisis')
-        plt.legend()
+        plt.legend(loc='upper right')
 
         if string == 'Inflation rate':
             plt.ylabel('Annual inflation rate')
@@ -120,7 +120,7 @@ def plot_by_crisis_length(series, crisis_duration, frequency_table, string, desi
     i = desired_length #Reassign the desired_length to a variable i for convenience
 
     # Check if the desired length is in the frequency table
-    if i in frequency_table.Length_of_crisis.tolist():
+    if i in frequency_table['Length in years'].tolist():
         series_by_crisis_length = []
 
         #Appending the series for single year crisis
@@ -155,11 +155,11 @@ def plot_by_crisis_length(series, crisis_duration, frequency_table, string, desi
 
         # Add annotations for number of observations and explanation
         plt.text(0, 9,f'Number of observations : {number_of_observations }',ha='left', va='top',  style = 'italic', fontsize=10, bbox={'facecolor': 'grey', 'alpha': 0.5, 'pad': 10})
-        plt.text(-0.5, -13, 'The number of points from which the average is calculated \nis indicated above each trend point.', ha='left', va='top',style = 'italic', fontsize=10, color = 'gray')
+        # plt.text(-0.5, -13, 'The number of points from which the average is calculated\nis indicated above each trend point.', ha='left', va='top',style = 'italic', fontsize=10, color = 'gray')
 
         # Set title, labels, and limits
         plt.title(f'{string} in reaction to a {i}-year banking crisis')
-        plt.legend()
+        plt.legend(loc='upper right')
 
         if string == 'Inflation rate':
             plt.ylabel('Annual inflation rate')
@@ -187,46 +187,53 @@ def plot_dynamics(crisis_series, recovery_series, string):
     '''
     #Compute the average response pattern by time elapsed with normalizing the inflation series
     average_pattern_during_crisis, number_of_data_points_during_crisis  = compute_pattern(crisis_series)
-    average_pattern_during_recovery, number_of_data_points_during_recovery  = compute_pattern(recovery_series)
+    average_pattern_during_recovery, number_of_data_points_during_recovery = compute_pattern(recovery_series)
 
-    #Plot the inflation rate during banking crsis period
+    fig, axs = plt.subplots(2, 1, figsize=(8,9), sharey = True)
+
+    #Plot the crisis trend
+
     years = [f"ts{i}" if i < 0 else f"ts+{i}" if i > 0 else "ts" for i in range(-1, len(average_pattern_during_crisis) - 1)]
-    sns.lineplot(x = years, y = average_pattern_during_crisis, marker = 's', label = 'Average pattern')
-
+    sns.lineplot(ax = axs[0], x = years, y = average_pattern_during_crisis, marker = 's', label = 'Average response')
     # Add data points count to the plot
     offset = 0.1
     for m in range(len(average_pattern_during_crisis)):
         if -10< (average_pattern_during_crisis[m] + offset) <10:
-            plt.text(m, average_pattern_during_crisis[m] + offset, str(number_of_data_points_during_crisis[m]), ha='center', va='bottom')
-
+            axs[0].text(m, average_pattern_during_crisis[m] + offset, str(number_of_data_points_during_crisis[m]), ha='center', va='bottom')
     # Add horizontal line at y=0
-    plt.axhline(y=0, color='orange', label='y=0', linestyle = 'dashed', alpha = 0.8)
+    axs[0].axhline(y=0, color='orange', label='y=0', linestyle = 'dashed', alpha = 0.8)
+    # Add a box for the number of observations
+    axs[0].text(0.05, 0.93,f'Number of observations : {len(crisis_series)}',ha='left', va='top',  style = 'italic', fontsize=9, bbox={'facecolor': 'grey', 'alpha': 0.5, 'pad': 10}, transform=axs[0].transAxes)
+    # Set plot title, labels, limits, and legend
+    axs[0].legend(loc='upper right')
+    axs[0].set_title(f'{string} during crisis period')
+    axs[0].set_xlabel('Time in years')
+    axs[0].set_ylabel(string)
 
-    # Set plot title and labels
-    plt.title(f'{string} during crisis period')
-    plt.xlabel('Time in years')
-    plt.ylabel(string)
-    plt.show()
+    #Plot the recovery trend
 
-    #Plot the inflation rate during recovery period
     years = [f"te+{i}" if i > 0 else "te" for i in range(0, len(average_pattern_during_recovery))]
-    sns.lineplot(x = years, y = average_pattern_during_recovery, marker = 's', color = 'Purple', alpha = 0.9, label = 'Pattern during recovery')
-
+    sns.lineplot(ax=axs[1], x = years, y = average_pattern_during_recovery, marker = 's', color = 'Purple', alpha = 0.9, label = 'Average trend')
     # Add data points count to the plot
     offset = 0.3
-    for m in range(0,14):
+    for m in range(0, min(14, len(average_pattern_during_recovery))):
         if -10< (average_pattern_during_recovery[m] + offset) <10:
-            plt.text(m, average_pattern_during_recovery[m] + offset, str(number_of_data_points_during_recovery[m]), ha='center', va='bottom')
-
+            axs[1].text(m, average_pattern_during_recovery[m] + offset, str(number_of_data_points_during_recovery[m]), ha='center', va='bottom')
     # Add horizontal line at y=0
-    plt.axhline(y=0, color='orange', label='y=0', linestyle = 'dashed', alpha = 0.8)
-
+    axs[1].axhline(y=0, color='orange', label='y=0', linestyle = 'dashed', alpha = 0.8)
+    # Add a box for the number of observations
+    axs[1].text(0.05, 0.93,f'Number of observations : {len(recovery_series)}',ha='left', va='top',  style = 'italic', fontsize=9, bbox={'facecolor': 'grey', 'alpha': 0.5, 'pad': 10}, transform=axs[1].transAxes)
     # Set plot title, labels, limits, and legend
-    plt.title(f'{string} during recovery period')
-    plt.xlabel('Time in years')
-    plt.ylabel(string)
-    plt.ylim(-10, 10)
-    plt.xlim('te', 'te+13')
+    axs[1].legend(loc='upper right')
+    axs[1].set_title(f'{string} during recovery period')
+    axs[1].set_xlabel('Time in years')
+    axs[1].set_ylabel(string)
+    # axs[1].set_ylim(-6,8)
 
-    plt.legend()
-    plt.show()
+    if len(average_pattern_during_recovery) > 14:
+        axs[1].set_xlim( -0.5,'te+13')
+
+    # Separate the two subplots
+    plt.subplots_adjust(hspace=0.25)
+    # Add a text
+    fig.text(0.12, 0, 'The number of points from which the average is calculated is diplayed above each point.', ha='left', va='bottom',style = 'italic', fontsize=10, color = 'gray')

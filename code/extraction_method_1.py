@@ -10,18 +10,18 @@ def compute_crisis_duration(dataset):
     Returns:
     list: A list containing the duration of each crisis event.
     '''
-    # Create a variable to count the length of the crises event when iterating through the dataset
-    current_length = 0
-    # Create a list to store the durations of every crisis
-    crisis_duration = []
+    current_length = 0 # Create a variable to count the length of the crises event when iterating through the dataset
+    crisis_duration = [] # Create a list to store the durations of every crisis
+    last_index = 0  # Variable to store the index of the last row processed
 
     # Create a loop to iterate through each row of the dataset
     for index, row in dataset.iterrows():
         # Check if we are currently in a crisis event
         if current_length > 0:
             # If the crisis event continues in the current year, add another year to the current_length variable
-            if row['banking_crisis'] == 1:
-                current_length += 1
+            if row['banking_crisis'] == 1 and row['banking_crisis_only_first_year'] != 1:
+                if index == last_index + current_length: # Check that the crisis years are following themselces when we are adding a year to the length of the crisis
+                    current_length += 1
             # If the crisis event ends, append the duration to crisis_duration list and reset current_length
             else:
                 crisis_duration.append(current_length)
@@ -30,6 +30,7 @@ def compute_crisis_duration(dataset):
         else:
             if row['banking_crisis_only_first_year'] == 1:
                 current_length = +1
+                last_index = index #Track the index of the first year of the current banking crisis in the dataset
 
     #Check if the last sequence extends to the end of the dataset
     if current_length > 0:
@@ -54,22 +55,25 @@ def length_frequency(crisis_duration):
         length_counts[length] = length_counts.get(length, 0) + 1
 
     # Convert dictionary to pandas DataFrame
-    frequency_table = pd.DataFrame(list(length_counts.items()), columns=['Length_of_crisis','Number_of_crisis_event'])
-    frequency_table = frequency_table.sort_values(by='Length_of_crisis').reset_index(drop=True)
+    frequency_table = pd.DataFrame(list(length_counts.items()), columns=['Length in years','Count'])
+    frequency_table = frequency_table.sort_values(by='Length in years').reset_index(drop=True)
 
     ## Add a number of data points column
     # frequency_table['Number of points'] = frequency_table['Number_of_crisis_event'].sum() - frequency_table['Number_of_crisis_event'].cumsum() + frequency_table['Number_of_crisis_event']
 
     return frequency_table
 
-#Time series extraction
 def extract_inflation_series(data):
     '''
     Extract series of inflation rates for each first year of crisis until another crisis occurs or NaN values are encountered.
     ts represents the starting year of a banking crisis.
 
     Args:
-    data (DataFrame): The dataset containing crisis event information.
+    data: DataFrame from which we use the following columns:
+        - 'annual_inflation': Inflation rate for each year.
+        - 'banking_crisis_only_first_year': Indicates if it's the first year of a banking crisis (1 if yes, 0 if no).
+        - 'inflation_crisis': Indicates if it's an inflation crisis year (1 if yes, 0 if no).
+        - 'currency_crisis': Indicates if it's a currency crisis year (1 if yes, 0 if no).
 
     Returns:
     list: A list of lists, where each sublist represents a series of inflation rates for a crisis event.
@@ -85,6 +89,7 @@ def extract_inflation_series(data):
                 # Extract data at ts-1 and ts.
                 current_serie.append(data.at[index - 1, 'annual_inflation'])
                 current_serie.append(row['annual_inflation'])
+
                 # Append inflation rate for the next 9 years until an inflation / currency / new banking crisis or NaN value in the inflation rate is encountered
                 for i in range(1,9):
                     if (data.at[index + i, 'inflation_crisis'] == 1  or
@@ -92,11 +97,15 @@ def extract_inflation_series(data):
                         data.at[index + i, 'banking_crisis_only_first_year'] == 1 or
                         pd.isna(data.at[index + i,'annual_inflation'])):
                         break
+
                     current_serie.append(data.at[index + i,'annual_inflation'])
+
                 # Append the cururent serie to the series list
                 series.append(current_serie)
+
                 # Resert the current serie to an empty list
                 current_serie = []
+
     return series
 
 def extract_output_gap_series(data):
@@ -121,16 +130,18 @@ def extract_output_gap_series(data):
             if index - 1 >= 0:
                 current_serie.append(data.at[index - 1, 'output_gap'])
             current_serie.append(row['output_gap'])
+
             # Append the output-gap for the next 9 years until an inflation / currency / new banking crisis is encountered
             for i in range(1,9):
                 if (data.at[index + i, 'inflation_crisis'] == 1  or
                     data.at[index + i, 'currency_crisis'] == 1 or
                     (data.at[index + i, 'banking_crisis_only_first_year'] == 1)):
                     break
-                current_serie.append(data.at[index + i,'output_gap'])
+                elif (row['Year'] + i) == (data.at[index + i,'Year']): # Checking that the years follow each other as in the output gap dataset some data can be missing
+                    current_serie.append(data.at[index + i,'output_gap'])
             # Append the current serie to the series list
             series.append(current_serie)
-            # Reser the cuurent serie to an empty list
+            # Reser the current serie to an empty list
             current_serie = []
     return series
 
@@ -157,7 +168,6 @@ def normalize_serie(list):
     return normalized_list
 
 
-# # Functions for crisis and recovery dynamics
 def inflation_dynamics(data, during_crisis=True):
     '''
     Extracts series of annual inflation rates for each banking crisis or recovery period.
@@ -172,7 +182,7 @@ def inflation_dynamics(data, during_crisis=True):
     If during_crisis is True:
         The function extracts the series of inflation rates for each banking crisis.
         Each series spans from the year before the crisis starts (ts-1) to the year before the crisis ends (te-1)
-        but stops if an exluded year occurs.
+        but stops if an exluded year occurs or another banking crisis begins.
     If during_crisis is False:
         The function extracts the series of inflation rates for each recovery period.
         Each series spans from the year after the crisis ends to the year before the next crisis starts
@@ -267,14 +277,12 @@ def output_gap_dynamics(data, during_crisis=True):
     Returns:
     - list: A list of series, where each sublist represents a series of output gap values.
 
-    The function iterates through the dataset and extracts series of output gap values based on the specified criteria.
-
     If during_crisis is True:
         it extracts series for each banking crisis, spanning from the year before the crisis starts (ts-1) to the year before the crisis ends (te-1)
-        but stops if an exluded year occurs.
+        but stops if an excluded year occurs.
     If during_crisis is False:
         it extracts series for each recovery period, spanning from the year after the crisis ends to the year before the next crisis starts
-        but stops if an exluded year occurs.
+        but stops if an excluded year occurs.
     '''
     # List
     series = [] # List to store extracted series
