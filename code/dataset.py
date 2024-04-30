@@ -2,7 +2,7 @@ import pandas as pd
 import statsmodels.api as sm
 import numpy as np
 
-def create_output_df(data, code, smoothing_param=1600):
+def create_output_df(data, code, smoothing_param=6.25):
     '''Create a dataframe with the Hodrick-Prescott detrended output gap for a specific country code.
 
     Args:
