@@ -6,7 +6,9 @@ This repository aims to provide empirical evidence to the paper *Information Cyc
 
 We aim to estimate the average response of macroeconomic variables to **banking crisis** of different durations, as well as the average pattern of a **recovery period** to a banking crisis.
 
-![Annual inflation rate in reaction to 2-year financial crisis - data from 70 countries](./figures/inflation_to_2_years_crisis.png)
+![Annual inflation rate in reaction to 1-year financial crisis - data from G20 countries](./figures/inflation_reaction_1Y_G20.png)
+
+![Annual inflation rate in reaction to 2-year financial crisis - data from G20 countries](./figures/inflation_reaction_2Y_G20.png)
 
 ## Two Methods for the Data Extraction
 
